@@ -1,6 +1,6 @@
 const { sendEmail } = require("../helpers/sendEmail");
 const userModels = require("../models/userModels");
-var jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
 const aleaRNGFactory = require("number-generator/lib/aleaRNGFactory");
 async function signupController(req, res) {
@@ -55,6 +55,17 @@ try {
       const user = await userModels.findOne({ email }).select("-password");
       // res.send(result)
       if(result){
+        if(existinguser.role=="user"){
+          const token = jwt.sign({ user }, process.env.JWT_Scret);
+          return res
+          .status(200)
+          .json({ success: true, msg: "User Login Successfully",data:user,token:token });
+        }else if(existinguser.role=="admin"){
+          const token = jwt.sign({ user }, process.env.JWT_Scret,{ expiresIn: '1h' });
+          return res
+          .status(200)
+          .json({ success: true, msg: "User Login Successfully",data:user ,token:token });
+        }
         return res
         .status(200)
         .json({ success: true, msg: "Login Successfully",data:user });
